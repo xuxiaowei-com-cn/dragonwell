@@ -1,0 +1,54 @@
+stages:
+  - docker-build
+  # 代码同步
+  - sync
+
+docker-build:
+  stage: docker-build
+  image: docker:24.0.6
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_HOST: tcp://docker:2375
+  services:
+    - docker:24.0.6-dind
+  before_script:
+    - set +e
+    - start_time=$(date +%s)
+    - elapsed=0
+    - interval=5
+    - timeout=120
+    - |
+      while true; do
+        docker info >/dev/null 2>&1
+        result=$?
+        echo "result=$result"
+        current_time=$(date +%s)
+        elapsed_time=$((current_time - start_time))
+        if [[ $result -eq 0 ]]; then
+          echo "docker 完成启动"
+          break
+        fi
+        if [[ $elapsed_time -gt $timeout ]]; then
+          echo "docker 启动超时"
+          exit 1
+        fi
+        echo "docker 正在启动($elapsed) ..."
+        elapsed=$((elapsed+interval))
+        sleep $interval
+      done
+    - set -e
+    - docker info
+    - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+  script:
+    - VERSION=8-anolis-TLSv1
+    - docker build -t $DOCKER_USERNAME/dragonwell:$VERSION .
+    - docker images
+    - docker push $DOCKER_USERNAME/dragonwell:$VERSION
+  # https://docs.gitlab.com/ee/ci/yaml/index.html#rules
+  rules:
+    - if: $CI_COMMIT_TAG
+
+# 嵌入
+include:
+  # 同步代码
+  - /sync.yml
