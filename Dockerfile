@@ -8,6 +8,7 @@ WORKDIR /usr/share/fonts/Windows-Fonts
 
 ADD Windows-Fonts /usr/share/fonts/Windows-Fonts
 
-RUN ls /usr/share/fonts/Windows-Fonts
+RUN sed -i 's/TLSv1//g' /opt/java/openjdk/jre/lib/security/java.security \
+    && ls /usr/share/fonts/Windows-Fonts
 
 WORKDIR /

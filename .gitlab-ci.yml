@@ -40,7 +40,7 @@ docker-build:
     - docker info
     - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
   script:
-    - VERSION=8-anolis-simsun.ttc
+    - VERSION=8-anolis-simsun.ttc-TLSv1
     - docker build -t $DOCKER_USERNAME/dragonwell:$VERSION . --no-cache --progress plain
     - docker images
     - docker tag $DOCKER_USERNAME/dragonwell:$VERSION $DOCKER_USERNAME/dragonwell:$VERSION-$CI_PIPELINE_ID
