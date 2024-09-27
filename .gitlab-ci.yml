@@ -1,0 +1,24 @@
+stages:
+  - docker-build
+
+docker-build:
+  stage: docker-build
+  image: docker:27.3.1-cli
+  services:
+    - docker:27.3.1-dind
+  before_script:
+    - docker info
+    - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+  script:
+    - >-
+      docker build
+      --build-arg CI_PIPELINE_URL=$CI_PIPELINE_URL
+      -t $DOCKER_USERNAME/dragonwell:multiple-anolis-23
+      -t $DOCKER_USERNAME/dragonwell:multiple-anolis-23-$CI_PIPELINE_ID
+      .
+      --push
+      --no-cache --progress plain
+    - docker images
+  # https://docs.gitlab.com/ee/ci/yaml/index.html#rules
+  # rules:
+  #   - if: $CI_COMMIT_TAG
